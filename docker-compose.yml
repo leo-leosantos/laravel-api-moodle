@@ -1,0 +1,65 @@
+version: '3'
+services: 
+    servidorlr:
+        image: laravelserver
+        container_name: servidorlr
+        ports:
+            - 8081:80
+            - 4438:443
+        volumes:
+            - ../laravel7/:/var/www/html/
+            - ../laravel7/:/app
+            - ./virtualhost/000-default.conf:/etc/apache2/sites-available/000-default.conf            
+            - ./compartida:/compartida
+        links:
+          - serverdb
+          - servercorreos
+    servidormd:
+        image: laravelserver
+        container_name: servidormd
+        ports:
+            - 8082:80
+            - 4439:443
+        volumes:
+            - ../moodle/:/var/www/html/
+            - ../moodle/:/app            
+            - ./virtualhost/001-default.conf:/etc/apache2/sites-available/000-default.conf            
+            - ./compartida:/compartida
+        links:
+          - serverdb    
+          - servercorreos      
+    serverdb:
+        image: mariadb
+        container_name: serverdb
+        environment:
+          - MYSQL_ROOT_PASSWORD=Nuevo123*
+          - MYSQL_DATABASE=udemycurso
+        volumes:
+          - ./mysql:/var/lib/mysql
+          - ./compartida:/compartida
+    gestionarmariadb:
+        image: phpmyadmin/phpmyadmin
+        container_name: gestionarmariadb
+        environment:
+          - PMA_ARBITRARY=1
+          - PMA_HOST=serverdb
+        ports:
+          - 8083:80
+        volumes:
+          - /sessions
+        links:
+          - serverdb
+    gestionarcontenedores:        
+        image: portainer/portainer
+        container_name: gestionarcontenedores
+        ports:
+            - 9000:9000
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+    servercorreos:
+        image: 'eaudeweb/mailtrap'
+        ports: 
+            - 8084:80
+        environment:
+            - MT_USER=admincorreo
+            - MT_PASSWD=Nuevo123*
