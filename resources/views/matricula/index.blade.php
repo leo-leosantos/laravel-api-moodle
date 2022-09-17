@@ -22,10 +22,10 @@
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Ações</th>
-                                        <th scope="col">Nome do Curso</th>
-                                        <th scope="col">Apelido do Curso</th>
-                                        <th scope="col">Nome do usuário</th>
+                                        <th scope="col">Nome Completo</th>
+                                        <th scope="col">Courso </th>
                                         <th scope="col">Email do usuário</th>
+                                        <th scope="col">Informação</th>
                                         <th scope="col">Status</th>
 
                                     </tr>
@@ -43,20 +43,31 @@
                                                 @endif
 
                                             </td>
-                                            <td>{{ $item->nombre }}</td>
-                                            <td>{{ $item->apellidos }}</td>
-                                            <td>{{ $item->nombreusuario }}</td>
+                                            <td>{{ $item->nombre }} - {{ $item->apellidos }}</td>
+                                            <td> {{ $item->nombrelargodelcurso }} - ({{ $item->nombrecortodelcurso }})</td>
                                             <td>{{ $item->email }}</td>
 
                                             <td>
+                                                <b> Pais: </b>  {{ $item->nombrepais }}<br />
+                                                <b> Dias sem logar: </b>  {{ $item->cantidaddiassiningreso }}<br />
+
+                                            </td>
+
+                                            <td>
                                                 <span class="badge badge-{{ $item->matricula ? 'success' : 'info' }}">
-                                                    {{ $item->matricula ? 'Matriculado' : 'Sim Matricular ' }} </span>
+                                                    {{ $item->matricula ? 'Matriculado' : 'Sim Matricular ' }} </span><br>
+                                                    @if (!$item->matricula)
+                                                    <span class="badge badge-{{ $item->yaregistrado ? 'danger' : 'warning' }}">
+                                                        {{ $item->yaregistrado ? 'Já Matriculado' : 'Não Matriculado ' }} </span><br>
+                                                    @endif
+
                                             </td>
 
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
+                            {{ $listramatriculas->links() }}
                         </div>
                     </div>
                 </div>

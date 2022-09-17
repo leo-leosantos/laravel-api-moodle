@@ -26,17 +26,22 @@
                             <div class="alert alert-success" role="alert">
                                 {{ session('status') }}
                             </div>
+                        @elseif (session('statuserror'))
+                            <div class="alert alert-danger" role="alert">
+                                {{ session('statuserror') }}
+                            </div>
                         @endif
 
                         <form method="POST" action="{{ route('guardanuevousuario') }}">
                             @csrf
                             <div class="form-group row">
                                 <label for="email" class="col-md-4 col-form-label text-md-right"> Email </label>
-                                <div class="col-md-5">
 
-                                    <input id="correo" name="correo" type="email"
+
+                                <div class="col-md-5">
+                                    <input id="email" name="email" type="email"
                                         class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}"
-                                        value="{{ old('email') }}" required>
+                                        value="{{ old('email') }}" >
 
                                     @if ($errors->has('email'))
                                         <span class="invalid-feedback">
@@ -52,7 +57,7 @@
 
                                     <input id="nombre" name="nombre" type="text"
                                         class="form-control{{ $errors->has('nombre') ? ' is-invalid' : '' }}"
-                                        value="{{ old('nombre') }}" required>
+                                        value="{{ old('nombre') }}" >
 
                                     @if ($errors->has('nombre'))
                                         <span class="invalid-feedback">
@@ -68,7 +73,7 @@
 
                                     <input id="apellidos" name="apellidos" type="text"
                                         class="form-control{{ $errors->has('apellidos') ? ' is-invalid' : '' }}"
-                                        value="{{ old('apellidos') }}" required>
+                                        value="{{ old('apellidos') }}" >
 
                                     @if ($errors->has('apellidos'))
                                         <span class="invalid-feedback">
@@ -82,11 +87,12 @@
                                 <label for="pais" class="col-md-4 col-form-label text-md-right"> Pais </label>
                                 <div class="col-md-5">
 
-                                    <select class="form-control" id="country" name="country" data-live-search="true">
-                                            <option value="1" selected >Selecione o pais(opcional)</option>
-                                            @foreach($listaPaises as $item)
-                                                <option value="{{ $item->codigo }}" > {{ $item->nombre }}</option>
-                                            @endforeach
+                                    <select class="form-control{{ $errors->has('pais') ? 'is-invalid' : '' }}" id="pais" name="pais" data-live-search="true">
+                                        <option value="-1" {{ old('pais', '-1') == '-1' ? 'selected' : '' }}  >Selecione o pais(opcional)</option>
+                                        @foreach ($listaPaises as $item)
+                                            {{ $item }}
+                                            <option value="{{ $item->codigo }}" {{ old('pais', '-1') == $item->codigo ? 'selected' : '' }} > {{ $item->nombre }}</option>
+                                        @endforeach
                                     </select>
 
                                     @if ($errors->has('pais'))
@@ -96,20 +102,84 @@
                                     @endif
                                 </div>
                             </div>
-                                <div class="form-group row mb-0">
-                                    <div class="col-6 text-center">
-                                        <button type="submit" class="btn btn-success" id="btenviar">Cadastrar
-                                            Registro</button>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <a class="btn btn-info" href="{{ route('listramatricula') }}"
-                                            role="button">Regressar Registro</a>
-                                    </div>
+
+
+                            <div class="form-group row">
+                                <label for="nombreusuario" class="col-md-4 col-form-label text-md-right"> Nome Usuário </label>
+
+                                <div class="col-md-5">
+                                    <input id="nombreusuario" name="nombreusuario" type="text"
+                                        class="form-control{{ $errors->has('nombreusuario') ? ' is-invalid' : '' }}"
+                                        value="{{ old('nombreusuario') }}" >
+
+                                    @if ($errors->has('nombreusuario'))
+                                        <span class="invalid-feedback">
+                                            <strong> {{ $errors->first('nombreusuario') }}</strong>
+                                        </span>
+                                    @endif
                                 </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="nombreusuario" class="col-md-4 col-form-label text-md-right"> Senha </label>
+
+                                <div class="col-md-5">
+                                    <input id="contrasenia" name="contrasenia" type="password"
+                                        class="form-control{{ $errors->has('contrasenia') ? ' is-invalid' : '' }}"
+                                        value="{{ old('contrasenia') }}" >
+
+                                    @if ($errors->has('contrasenia'))
+                                        <span class="invalid-feedback">
+                                            <strong> {{ $errors->first('contrasenia') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label for="codcurso" class="col-md-4 col-form-label text-md-right"> Codigo do Curso </label>
+
+                                <div class="col-md-5">
+                                <select class="form-control{{ $errors->has('codcurso') ? 'is-invalid' : '' }}" id="codcurso" name="codcurso" data-live-search="true">
+                                    <option value="-1" {{ old('codcurso', '-1') == '-1' ? 'selected' : '' }}  >Selecione o Curso</option>
+                                    @foreach ($listadecursos as $item)
+                                        <option value="{{ $item['id'] }}" {{ old('codcurso', '-1') == $item['id'] ? 'selected' : '' }}  >
+
+                                            {{ $item['fullname'] }} |  {{ $item['shortname'] }} -  {{ $item['visible'] == 1 ? 'A' : 'I' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                    @if ($errors->has('codcurso'))
+                                        <span class="invalid-feedback">
+                                            <strong> {{ $errors->first('codcurso') }}</strong>
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="form-group row mb-0">
+                                <div class="col-6 text-center">
+                                    <button type="submit" class="btn btn-success" id="btenviar">Cadastrar
+                                        Registro</button>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <a class="btn btn-info" href="{{ route('listramatricula') }}" role="button">Regressar
+                                        Registro</a>
+                                </div>
+                            </div>
                         </form>
+
+
+
                     </div>
+
                 </div>
+
             </div>
+
+
         </div>
     </div>
 @endsection

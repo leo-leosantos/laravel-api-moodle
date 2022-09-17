@@ -48,4 +48,72 @@ class Controller extends BaseController
 
         return $nuevalista;
     }
+
+    public function obtenerUsuario($valor, $tipo = 'email')
+    {
+        $client = new Client();
+      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+
+        $resultado = $client->request('GET', env('API_ENDPOINT'), [
+            'query' => [
+                'wstoken' => env('API_KEY'),
+                'wsfunction' => 'core_user_get_users_by_field',
+                'moodlewsrestformat' => 'json',
+                'field'=>$tipo,
+                'values[0]' => $valor
+            ]
+        ]);
+
+
+        $resultado = json_decode($resultado->getBody()->getContents());
+        return  $resultado;
+
+    }
+
+
+
+
+
+    public function obtenerCursosDeUsuario($valor)
+    {
+        $client = new Client();
+      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+
+        $resultado = $client->request('GET', env('API_ENDPOINT'), [
+            'query' => [
+                'wstoken' => env('API_KEY'),
+                'wsfunction' => 'core_enrol_get_users_courses',
+                'moodlewsrestformat' => 'json',
+                'userid' => $valor
+            ]
+        ]);
+
+
+        $resultado = json_decode($resultado->getBody()->getContents());
+        return  $resultado;
+
+    }
+
+    public function obtenerCursosPorId($id, $tipo ='id')
+    {
+        $client = new Client();
+      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+
+        $resultado = $client->request('GET', env('API_ENDPOINT'), [
+            'query' => [
+                'wstoken' => env('API_KEY'),
+                'wsfunction' => 'core_course_get_courses_by_field',
+                'moodlewsrestformat' => 'json',
+                'field' => $tipo,
+                'value'=>$id
+            ]
+        ]);
+
+
+        $resultado = json_decode($resultado->getBody()->getContents());
+        return  $resultado->courses[0];
+
+    }
 }
+
+

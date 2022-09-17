@@ -26,7 +26,9 @@ class CreateMatricularsTable extends Migration
             $table->Integer('cantidaddiassiningreso')->nullable()->default(0);
             $table->string('codigopais',60)->nullable();
             $table->string('nombrepais',60)->nullable();
-            $table->boolean('matricula',60)->nullable()->default(0);
+            $table->boolean('yaregistrado')->nullable()->default(0);
+            $table->boolean('matricula')->nullable()->default(0);
+
             $table->timestamps();
         });
     }
