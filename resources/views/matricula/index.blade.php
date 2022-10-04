@@ -12,8 +12,12 @@
                             <div class="alert alert-success" role="alert">
                                 {{ session('status') }}
                             </div>
+                        @elseif (session('statuserror'))
+                            <div class="alert alert-danger" role="alert">
+                                {{ session('statuserror') }}
+                            </div>
                         @endif
-                        <div class ="row mr-5">
+                        <div class="row mr-5">
                             <a href="{{ route('crearmatricula') }}" class="btn btn-success"> Nova Matricula </a>
                         </div>
                         <div class="row">
@@ -48,18 +52,20 @@
                                             <td>{{ $item->email }}</td>
 
                                             <td>
-                                                <b> Pais: </b>  {{ $item->nombrepais }}<br />
-                                                <b> Dias sem logar: </b>  {{ $item->cantidaddiassiningreso }}<br />
+                                               <b>Nome de usuario:  </b>{{ $item->nombreusuario }}   <b> Pais: </b> {{ $item->nombrepais }}<br />
+                                                <b> Dias sem logar: </b> {{ $item->cantidaddiassiningreso }}<br />
 
                                             </td>
 
                                             <td>
                                                 <span class="badge badge-{{ $item->matricula ? 'success' : 'info' }}">
                                                     {{ $item->matricula ? 'Matriculado' : 'Sim Matricular ' }} </span><br>
-                                                    @if (!$item->matricula)
-                                                    <span class="badge badge-{{ $item->yaregistrado ? 'danger' : 'warning' }}">
-                                                        {{ $item->yaregistrado ? 'Já Matriculado' : 'Não Matriculado ' }} </span><br>
-                                                    @endif
+                                                @if (!$item->matricula)
+                                                    <span
+                                                        class="badge badge-{{ $item->yaregistrado ? 'danger' : 'warning' }}">
+                                                        {{ $item->yaregistrado ? 'Já Matriculado' : 'Não Matriculado ' }}
+                                                    </span><br>
+                                                @endif
 
                                             </td>
 

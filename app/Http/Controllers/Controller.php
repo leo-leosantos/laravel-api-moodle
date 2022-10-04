@@ -15,7 +15,7 @@ class Controller extends BaseController
     public function obtenerCursos()
     {
         $client = new Client();
-      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
 
         $resultado = $client->request('GET', env('API_ENDPOINT'), [
             'query' => [
@@ -26,7 +26,7 @@ class Controller extends BaseController
         ]);
 
 
-       //
+        //
 
         $listJsonResult = json_decode($resultado->getBody()->getContents());
         $nuevalista = [];
@@ -41,8 +41,7 @@ class Controller extends BaseController
         }
         $listJsonResult = null;
 
-        usort($nuevalista, function($a, $b)
-        {
+        usort($nuevalista, function ($a, $b) {
             return strtolower($a['fullname']) > strtolower($b['fullname']);
         });
 
@@ -52,14 +51,14 @@ class Controller extends BaseController
     public function obtenerUsuario($valor, $tipo = 'email')
     {
         $client = new Client();
-      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
 
         $resultado = $client->request('GET', env('API_ENDPOINT'), [
             'query' => [
                 'wstoken' => env('API_KEY'),
                 'wsfunction' => 'core_user_get_users_by_field',
                 'moodlewsrestformat' => 'json',
-                'field'=>$tipo,
+                'field' => $tipo,
                 'values[0]' => $valor
             ]
         ]);
@@ -67,7 +66,6 @@ class Controller extends BaseController
 
         $resultado = json_decode($resultado->getBody()->getContents());
         return  $resultado;
-
     }
 
 
@@ -77,7 +75,7 @@ class Controller extends BaseController
     public function obtenerCursosDeUsuario($valor)
     {
         $client = new Client();
-      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
 
         $resultado = $client->request('GET', env('API_ENDPOINT'), [
             'query' => [
@@ -91,13 +89,12 @@ class Controller extends BaseController
 
         $resultado = json_decode($resultado->getBody()->getContents());
         return  $resultado;
-
     }
 
-    public function obtenerCursosPorId($id, $tipo ='id')
+    public function obtenerCursosPorId($id, $tipo = 'id')
     {
         $client = new Client();
-      //  dd(env('API_KEY'), env('API_ENDPOINT'));
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
 
         $resultado = $client->request('GET', env('API_ENDPOINT'), [
             'query' => [
@@ -105,15 +102,35 @@ class Controller extends BaseController
                 'wsfunction' => 'core_course_get_courses_by_field',
                 'moodlewsrestformat' => 'json',
                 'field' => $tipo,
-                'value'=>$id
+                'value' => $id
             ]
         ]);
 
 
         $resultado = json_decode($resultado->getBody()->getContents());
         return  $resultado->courses[0];
+    }
 
+    public function crearusuario($nombreusuario, $contrasenia, $nombre, $apellidos, $email, $codigopais)
+    {
+        $client = new Client();
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
+
+        $resultado = $client->request('GET', env('API_ENDPOINT'), [
+            'query' => [
+                'wstoken' => env('API_KEY'),
+                'wsfunction' => 'core_user_create_users',
+                'moodlewsrestformat' => 'json',
+                'users[0][username]' => $nombreusuario,
+                'users[0][password]' => $contrasenia,
+                'users[0][firstname]' => $nombre,
+                'users[0][lastname]' => $apellidos,
+                'users[0][email]' =>   $email,
+                'users[0][country]' => $codigopais,
+            ]
+        ]);
+
+        $resultado = json_decode($resultado->getBody()->getContents());
+        return  $resultado;
     }
 }
-
-

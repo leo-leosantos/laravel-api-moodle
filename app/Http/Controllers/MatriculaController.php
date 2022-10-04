@@ -151,4 +151,89 @@ class MatriculaController extends Controller
 
         return redirect()->route('listramatricula')->with('status', 'usuário cadastrado com sucesso');
     }
+
+
+    public function enviarAMatricular(array $usuarioAMatricular){
+
+        try {
+            // logia para matricular
+
+        } catch (\Exception $e) {
+            return false;
+        }
+        return true;
+    }
+
+
+    public function crearUsuarioEnMoodle($matricular)
+    {
+        $nuevoUsuario = $this->crearusuario(
+                                $matricular->nombreusuario,
+                                $matricular->contrasenia,
+                                $matricular->nombre,
+                                $matricular->apellidos,
+                                $matricular->email,
+                                $matricular->codigopais);
+
+            $nuevoUsuario->yaregistrado = 1;
+            $nuevoUsuario->save();
+
+           // dd($nuevoUsuario);
+        return $nuevoUsuario;
+    }
+
+    public function matricular(Request $request, $id)
+    {
+        $request->user()->authorizeRoles('administrador');
+
+        $resultadoMatricula = false;
+        //$dadosdelformulario = $request->all();
+
+        $usuarioAMatricular = Matricular::where('id', $id)->first();
+      //  dd($usuarioAMatricular);
+        if(!$usuarioAMatricular->yaregistrado){
+            $usuario =  $this->obtenerUsuario($usuarioAMatricular->email);
+
+            //dd($usuario);
+            if(count($usuario) == 0){
+                $usuario =  $this->obtenerUsuario($usuarioAMatricular->nombreusuario, 'username');
+
+                if(count($usuario) == 0)
+                {
+                    //creo nuevo usuario
+                    $nuevoUsuario = $this->crearUsuarioEnMoodle($usuarioAMatricular);
+                   // dd($nuevoUsuario[0]->id);
+
+                    //envio a matricular
+                   $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular);
+
+
+                }else{
+                    return back()->withInput()->with('statuserror','O usuário ja exite');
+                }
+
+            }else{
+                //envio a matricular
+                $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular);
+
+            }
+
+        }
+        else{
+                //envio a matricular
+                $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular);
+
+        }
+
+        //enviar email de resultado da matriula
+        if($resultadoMatricula){
+            //enviar email
+        }else{
+            return back()->withInput()->with('statuserror','error não foi possivel matricular o usuário');
+
+        }
+
+        return redirect()->route('listramatricula')->with('status', 'usuário matriculado com sucesso');
+
+    }
 }
