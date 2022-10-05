@@ -8,7 +8,7 @@ use App\Models\Paisesmoodle;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Mail;
 class MatriculaController extends Controller
 {
     /**
@@ -153,7 +153,7 @@ class MatriculaController extends Controller
     {
 
         try {
-            if($usuarioAMatricular->cantidaddiassiningreso > 35){
+            if ($usuarioAMatricular->cantidaddiassiningreso > 35) {
                 $this->actualizarContraseninausuario($idusuario, $usuarioAMatricular->contrasenia);
             }
             // logia para matricular
@@ -161,20 +161,18 @@ class MatriculaController extends Controller
             $matricularusuario = true;
             $cursosDelusuario = $this->obtenerCursosDeUsuario($idusuario);
 
-            foreach ($cursosDelusuario as $curso){
-                if($curso->id == $usuarioAMatricular->curso_id ) {
+            foreach ($cursosDelusuario as $curso) {
+                if ($curso->id == $usuarioAMatricular->curso_id) {
                     $matricularusuario = false;
                 }
             }
-            if($matricularusuario){
+            if ($matricularusuario) {
                 $matriculado = $this->matricularEnCurso($idusuario, $usuarioAMatricular->curso_id);
             }
 
             $usuarioAMatricular->matricula = 1;
             $usuarioAMatricular->save();
-
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
         return true;
@@ -197,6 +195,43 @@ class MatriculaController extends Controller
 
         // dd($nuevoUsuario);
         return $nuevoUsuario;
+    }
+
+    public function enviarCorreoEletronico($usuarioAMatricular)
+    {
+
+        try {
+            $contrasenia = $usuarioAMatricular->contrasenia;
+
+            if( $usuarioAMatricular->cantidaddiassiningreso > 0 &&  $usuarioAMatricular->cantidaddiassiningreso <= 100){
+
+                $contrasenia = "sua senha nao foi modificada";
+            }
+
+            $subject = "usuario:" . $usuarioAMatricular->nombreusuario . "foi matricualdo";
+
+            $data = array('email'=> $usuarioAMatricular->email,
+                'subject' => $subject,
+                'nombrecurso'=>$usuarioAMatricular->nombrelargodelcurso . '(' . $usuarioAMatricular->nombrecortodelcurso . ')',
+                'nombrecompleto'=>$usuarioAMatricular->nombre . ' ' . $usuarioAMatricular->apellidos,
+                'nombreusuario' => $usuarioAMatricular->nombreusuario,
+                'contrasenia'=>$contrasenia
+
+            );
+
+                Mail::send('email.email' , ['data'=> $data], function ($message) use ($data) {
+                            $message->from('zabbixnotificacoes@gmail.com', 'EAD MOODLE');
+                            $message->to($data['email']);
+                            $message->subject($data['subject']);
+
+                    });
+            }
+
+         catch (\Exception $e) {
+            return false;
+        }
+
+        return true;
     }
 
     public function matricular(Request $request, $id)
@@ -243,6 +278,16 @@ class MatriculaController extends Controller
         if ($resultadoMatricula) {
 
             //enviar email
+          $resultadodeEnvioEmail =  $this->enviarCorreoEletronico($usuarioAMatricular);
+          if(!$resultadodeEnvioEmail){
+
+            return redirect()->route('listramatricula')->with('status', 'usuario matriculado com sucesso');
+
+            return back()->withInput()->with('statuserror', 'error não foi possivel enviar o email');
+
+          }
+
+
         } else {
             return back()->withInput()->with('statuserror', 'error não foi possivel matricular o usuário');
         }
@@ -251,4 +296,16 @@ class MatriculaController extends Controller
     }
 
 
+    public function eliminar(Request $request, $id)
+    {
+        $request->user()->authorizeRoles(['colaborador','administrador']);
+
+        $usuarioAEliminar = Matricular::where('id', $id)->first();
+
+        $usuarioAEliminar->delete();
+
+        return redirect()->route('listramatricula')->with('status', 'usuário excluido com sucesso');
+
+
+    }
 }

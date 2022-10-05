@@ -25,7 +25,8 @@
                                 <thead class="thead-dark">
                                     <tr>
                                         <th scope="col">#</th>
-                                        <th scope="col">Ações</th>
+                                        <th scope="col">Matricular</th>
+                                        <th scope="col">Eliminar</th>
                                         <th scope="col">Nome Completo</th>
                                         <th scope="col">Courso </th>
                                         <th scope="col">Email do usuário</th>
@@ -45,14 +46,19 @@
                                                             class="btn btn-success">Matricular</a>
                                                     @endif
                                                 @endif
-
+                                            </td>
+                                            <td>
+                                                @if (!$item->matricula)
+                                                    <a href="{{ route('eliminaralunno', $item->id) }}"
+                                                    class="btn btn-danger">Eliminar</a>
+                                            @endif
                                             </td>
                                             <td>{{ $item->nombre }} - {{ $item->apellidos }}</td>
                                             <td> {{ $item->nombrelargodelcurso }} - ({{ $item->nombrecortodelcurso }})</td>
                                             <td>{{ $item->email }}</td>
 
                                             <td>
-                                               <b>Nome de usuario:  </b>{{ $item->nombreusuario }}   <b> Pais: </b> {{ $item->nombrepais }}<br />
+                                               <b>Nome de usuario:  </b>{{ $item->nombreusuario }}   <b> Pais: </b> {{ $item->nombrepais }}<br>
                                                 <b> Dias sem logar: </b> {{ $item->cantidaddiassiningreso }}<br />
 
                                             </td>

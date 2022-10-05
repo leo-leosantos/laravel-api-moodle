@@ -28,3 +28,11 @@ Route::get('/matricular/alunno/{id}', 'MatriculaController@matricular')->name('m
 
 Route::get('/matricular/alunno/crear/nuevo', 'MatriculaController@crearnuevoregistro')->name('crearmatricula');
 Route::post('/matricular/alunno/crear/nuevousuario','MatriculaController@guardanuevousuario')->name('guardanuevousuario');
+
+
+
+Route::get('/matricular/eliminar/alunno/{id}', 'MatriculaController@eliminar')->name('eliminaralunno');
+
+
+
+
