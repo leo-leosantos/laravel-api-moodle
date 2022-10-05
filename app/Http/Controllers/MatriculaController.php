@@ -31,7 +31,7 @@ class MatriculaController extends Controller
         $request->user()->authorizeRoles(['colaborador', 'administrador']);
         // dd($this->obtenerCursos());
 
-        $listramatriculas =   Matricular::orderby('id','desc')->paginate(2);
+        $listramatriculas =   Matricular::orderby('id', 'desc')->paginate(2);
 
         return view('matricula.index', compact('listramatriculas'));
     }
@@ -74,7 +74,7 @@ class MatriculaController extends Controller
         );
     }
 
-    public function guardarregistros(array $dadosdelformulario, $registrado = 0, $cantdadDiasSinIngreso =0 )
+    public function guardarregistros(array $dadosdelformulario, $registrado = 0, $cantdadDiasSinIngreso = 0)
     {
 
 
@@ -86,7 +86,7 @@ class MatriculaController extends Controller
         $matricular->contrasenia = $dadosdelformulario['contrasenia'];
         $matricular->curso_id = $dadosdelformulario['codcurso'];
         //trazendo dados del curso
-        $datoDelCurso = $this->obtenerCursosPorId($dadosdelformulario['codcurso']) ;
+        $datoDelCurso = $this->obtenerCursosPorId($dadosdelformulario['codcurso']);
         $matricular->nombrecortodelcurso = $datoDelCurso->shortname;
         $matricular->nombrelargodelcurso = $datoDelCurso->fullname;
 
@@ -94,16 +94,13 @@ class MatriculaController extends Controller
 
         //trazendo dados del paises
         $matricular->codigopais = $dadosdelformulario['pais'];
-        $pais = Paisesmoodle::where('codigo',$dadosdelformulario['pais'])->first();
+        $pais = Paisesmoodle::where('codigo', $dadosdelformulario['pais'])->first();
         $matricular->nombrepais =  $pais->nombre;
 
         $matricular->yaregistrado = $registrado;
         $matricular->save();
 
         return true;
-
-
-
     }
     public function guardanuevousuario(Request $request)
     {
@@ -137,8 +134,7 @@ class MatriculaController extends Controller
                 }
             }
             $cantdadDias = 0;
-            if($usuario[0]->lastaccess > 0)
-            {
+            if ($usuario[0]->lastaccess > 0) {
                 $date = new DateTime();
                 $datenow = new DateTime();
                 $date->setTimestamp($usuario[0]->lastaccess);
@@ -153,12 +149,32 @@ class MatriculaController extends Controller
     }
 
 
-    public function enviarAMatricular(array $usuarioAMatricular){
+    public function enviarAMatricular($usuarioAMatricular, $idusuario)
+    {
 
         try {
+            if($usuarioAMatricular->cantidaddiassiningreso > 35){
+                $this->actualizarContraseninausuario($idusuario, $usuarioAMatricular->contrasenia);
+            }
             // logia para matricular
 
-        } catch (\Exception $e) {
+            $matricularusuario = true;
+            $cursosDelusuario = $this->obtenerCursosDeUsuario($idusuario);
+
+            foreach ($cursosDelusuario as $curso){
+                if($curso->id == $usuarioAMatricular->curso_id ) {
+                    $matricularusuario = false;
+                }
+            }
+            if($matricularusuario){
+                $matriculado = $this->matricularEnCurso($idusuario, $usuarioAMatricular->curso_id);
+            }
+
+            $usuarioAMatricular->matricula = 1;
+            $usuarioAMatricular->save();
+
+        }
+        catch (\Exception $e) {
             return false;
         }
         return true;
@@ -168,17 +184,18 @@ class MatriculaController extends Controller
     public function crearUsuarioEnMoodle($matricular)
     {
         $nuevoUsuario = $this->crearusuario(
-                                $matricular->nombreusuario,
-                                $matricular->contrasenia,
-                                $matricular->nombre,
-                                $matricular->apellidos,
-                                $matricular->email,
-                                $matricular->codigopais);
+            $matricular->nombreusuario,
+            $matricular->contrasenia,
+            $matricular->nombre,
+            $matricular->apellidos,
+            $matricular->email,
+            $matricular->codigopais
+        );
 
-            $nuevoUsuario->yaregistrado = 1;
-            $nuevoUsuario->save();
+        $nuevoUsuario->yaregistrado = 1;
+        $nuevoUsuario->save();
 
-           // dd($nuevoUsuario);
+        // dd($nuevoUsuario);
         return $nuevoUsuario;
     }
 
@@ -190,50 +207,48 @@ class MatriculaController extends Controller
         //$dadosdelformulario = $request->all();
 
         $usuarioAMatricular = Matricular::where('id', $id)->first();
-      //  dd($usuarioAMatricular);
-        if(!$usuarioAMatricular->yaregistrado){
+        //  dd($usuarioAMatricular);
+        if (!$usuarioAMatricular->yaregistrado) {
+
             $usuario =  $this->obtenerUsuario($usuarioAMatricular->email);
 
             //dd($usuario);
-            if(count($usuario) == 0){
+            if (count($usuario) == 0) {
                 $usuario =  $this->obtenerUsuario($usuarioAMatricular->nombreusuario, 'username');
 
-                if(count($usuario) == 0)
-                {
+                if (count($usuario) == 0) {
                     //creo nuevo usuario
                     $nuevoUsuario = $this->crearUsuarioEnMoodle($usuarioAMatricular);
-                   // dd($nuevoUsuario[0]->id);
+                    // dd($nuevoUsuario[0]->id);
 
                     //envio a matricular
-                   $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular);
-
-
-                }else{
-                    return back()->withInput()->with('statuserror','O usuário ja exite');
+                    $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular, $nuevoUsuario[0]->id);
+                } else {
+                    return back()->withInput()->with('statuserror', 'O usuário ja exite');
                 }
+            } else {
+                $usuario =  $this->obtenerUsuario($usuarioAMatricular->email);
 
-            }else{
                 //envio a matricular
-                $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular);
-
+                $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular, $usuario[0]->id);
             }
+        } else {
+            $usuario =  $this->obtenerUsuario($usuarioAMatricular->email);
 
-        }
-        else{
-                //envio a matricular
-                $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular);
-
+            //envio a matricular
+            $resultadoMatricula =  $this->enviarAMatricular($usuarioAMatricular, $usuario[0]->id);
         }
 
         //enviar email de resultado da matriula
-        if($resultadoMatricula){
-            //enviar email
-        }else{
-            return back()->withInput()->with('statuserror','error não foi possivel matricular o usuário');
+        if ($resultadoMatricula) {
 
+            //enviar email
+        } else {
+            return back()->withInput()->with('statuserror', 'error não foi possivel matricular o usuário');
         }
 
         return redirect()->route('listramatricula')->with('status', 'usuário matriculado com sucesso');
-
     }
+
+
 }

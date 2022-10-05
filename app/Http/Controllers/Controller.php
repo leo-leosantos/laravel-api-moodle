@@ -133,4 +133,46 @@ class Controller extends BaseController
         $resultado = json_decode($resultado->getBody()->getContents());
         return  $resultado;
     }
+
+    public function matricularEnCurso($userid, $courseid, $roleid = 5)
+    {
+        $client = new Client();
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
+
+        $resultado = $client->request('GET', env('API_ENDPOINT'), [
+            'query' => [
+                'wstoken' => env('API_KEY'),
+                'wsfunction' => 'enrol_manual_enrol_users',
+                'moodlewsrestformat' => 'json',
+                'enrolments[0][userid]' => $userid,
+                'enrolments[0][courseid]' => $courseid,
+                'enrolments[0][roleid]' => $roleid,
+                'enrolments[0][timestart]' => 0,
+                'enrolments[0][timeend]' => 0,
+                'enrolments[0][suspend]' => 0,
+            ]
+        ]);
+
+        $resultado = json_decode($resultado->getBody()->getContents());
+        return  $resultado;
+    }
+
+    public function actualizarContraseninausuario($idusuario, $password)
+    {
+        $client = new Client();
+        //  dd(env('API_KEY'), env('API_ENDPOINT'));
+
+        $resultado = $client->request('GET', env('API_ENDPOINT'), [
+            'query' => [
+                'wstoken' => env('API_KEY'),
+                'wsfunction' => 'core_user_update_users',
+                'moodlewsrestformat' => 'json',
+                'users[0][id]' => $idusuario,
+                'users[0][password]' => $password
+            ]
+        ]);
+
+        $resultado = json_decode($resultado->getBody()->getContents());
+        return  $resultado;
+    }
 }
